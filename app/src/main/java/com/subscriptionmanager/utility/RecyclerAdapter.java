@@ -31,8 +31,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view = layoutInflater.inflate(R.layout.row_item, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -126,6 +125,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                     if(new SubscriptionManagerDAO(view.getContext()).deleteSubscription(subscription).size() == 0){
                         Toast.makeText(view.getContext(), subscription.getSubscription() + " deleted successfully", Toast.LENGTH_LONG).show();
                         subscriptionList.remove(getAdapterPosition());
+                        Utility.cancelAlarm(view.getContext(), subscription.getId());
                         notifyItemRemoved(getAdapterPosition());
                     }
                     dialog.dismiss();

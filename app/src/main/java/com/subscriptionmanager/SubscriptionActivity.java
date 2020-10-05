@@ -2,8 +2,10 @@ package com.subscriptionmanager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -50,7 +52,9 @@ public class SubscriptionActivity extends AppCompatActivity implements DatePicke
         Intent intent = getIntent();
         if(intent.hasExtra("Subscription")) {
             oldSubscription = (Subscription) intent.getSerializableExtra("Subscription");
-            setupData(oldSubscription);
+            if(oldSubscription != null) {
+                setupData(oldSubscription);
+            }
             useCase = "update";
         }
         else{
@@ -107,12 +111,15 @@ public class SubscriptionActivity extends AppCompatActivity implements DatePicke
                 break;
             case R.id.savebutton :
                 if(useCase.equals("create")){
-                    Utility.validateInputs();
                     errorList = new Utility().validate(newSubName, startDate, endDate, remindDate, editText);
                     if(errorList.size() == 0){
-                        Subscription subscription = new Subscription(newSubName.getText().toString(), startDate, endDate, remindDate, Double.parseDouble(editText.getText().toString()));
-                        List<String> result = new SubscriptionManagerDAO(this).addSubcription(subscription);
+                        SubscriptionManagerDAO subscriptionManagerDAO = new SubscriptionManagerDAO(this);
+                        long id = subscriptionManagerDAO.getAvailableId();
+                        Subscription subscription = new Subscription(id, newSubName.getText().toString(), startDate, endDate, remindDate, Double.parseDouble(editText.getText().toString()));
+                        List<String> result = subscriptionManagerDAO.addSubcription(subscription);
                         if(result.size() == 0){
+                            //create the subscription for alarm
+                            Utility.setAlarm(remindDate.getTime(), (AlarmManager)getSystemService(Context.ALARM_SERVICE), this, id);
                             Log.i("submgr.info","Submission added for : "+newSubName.getText().toString());
                             finish();
                         }
@@ -136,9 +143,15 @@ public class SubscriptionActivity extends AppCompatActivity implements DatePicke
                     }
                     errorList = new Utility().validate(newSubName, startDate, endDate, remindDate, editText);
                     if(errorList.size() == 0){
-                        newSubscription = new Subscription(newSubName.getText().toString(), startDate, endDate, remindDate, Double.parseDouble(editText.getText().toString()));
-                        List<String> result = new SubscriptionManagerDAO(this).updateSubscription(oldSubscription, newSubscription);
+                        SubscriptionManagerDAO subscriptionManagerDAO = new SubscriptionManagerDAO(this);
+                        long id = subscriptionManagerDAO.getAvailableId();
+                        newSubscription = new Subscription(
+                                id, newSubName.getText().toString(), startDate, endDate, remindDate, Double.parseDouble(editText.getText().toString()));
+                        List<String> result = subscriptionManagerDAO.updateSubscription(oldSubscription, newSubscription);
                         if(result.size() == 0){
+                            //update the subscription for alarm
+                            Utility.cancelAlarm(this, id);
+                            Utility.setAlarm(remindDate.getTime(), (AlarmManager)getSystemService(Context.ALARM_SERVICE), this, id);
                             Log.i("submgr.info","Submission updated for : "+newSubscription.getSubscription());
                             finish();
                         }

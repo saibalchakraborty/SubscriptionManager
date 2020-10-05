@@ -3,14 +3,16 @@ package com.subscriptionmanager.model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Subscription implements Serializable {
+public class Subscription implements Serializable, Comparable {
+    private long id;
     private String subscription;
     private Date startDate;
     private Date endDate;
     private Date notifyDate;
     private double cost;
 
-    public Subscription(String subscription, Date startDate, Date endDate, Date notifyDate, double cost) {
+    public Subscription(long id, String subscription, Date startDate, Date endDate, Date notifyDate, double cost) {
+        this.id = id;
         this.subscription = subscription;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -58,14 +60,34 @@ public class Subscription implements Serializable {
         this.cost = cost;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
-        return "{" +
-                "subscription='" + subscription + '\'' +
+        return "Subscription{" +
+                "id=" + id +
+                ", subscription='" + subscription + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", notifyDate=" + notifyDate +
                 ", cost=" + cost +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Subscription subscription = (Subscription) o;
+        if(id < subscription.getId()){
+            return 1;
+        }
+        else {
+            return -1;
+        }
     }
 }

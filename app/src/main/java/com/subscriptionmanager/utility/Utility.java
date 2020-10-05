@@ -1,5 +1,9 @@
 package com.subscriptionmanager.utility;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -10,11 +14,7 @@ import java.util.List;
 
 public class Utility {
 
-    public static void validateInputs() {
-
-    }
-
-    public List validate(TextView newSubName, Date startDate, Date endDate, Date remindDate, EditText editText) {
+    public List<String> validate(TextView newSubName, Date startDate, Date endDate, Date remindDate, EditText editText) {
         List<String> issues = new ArrayList<>();
         if(newSubName == null || newSubName.getText().toString().length() == 0){
             issues.add("Please add a valid Subscription name");
@@ -69,5 +69,18 @@ public class Utility {
             e.getLocalizedMessage();
         }
         return null;
+    }
+
+    public static void setAlarm(long milliSec, AlarmManager alarmManager, Context context, long id){
+        Intent intent = new Intent(context, NotificationService.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, 0);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, milliSec, pendingIntent);
+    }
+
+    public static void cancelAlarm(Context context, long id) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, NotificationService.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, (int)id, intent, 0);
+        alarmManager.cancel(pendingIntent);
     }
 }

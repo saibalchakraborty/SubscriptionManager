@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 import com.subscriptionmanager.model.Subscription;
 import com.subscriptionmanager.utility.Utility;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -30,8 +32,8 @@ public class SubscriptionManagerDAO extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        query = "CREATE TABLE " + CUSTOMER_TABLE + " " +
-                "(" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_SUBSCRIPTION + " INTEGER, " + COLUMN_START_DATE + " INTEGER, " + COLUMN_END_DATE + " INTEGER, " + COLUMN_NOTIFY_DATE + " INTEGER, " + COLUMN_COST + " REAL)";
+        query = "CREATE TABLE IF NOT EXISTS " + CUSTOMER_TABLE + " " +
+                "(" + ID + " INTEGER PRIMARY KEY, " + COLUMN_SUBSCRIPTION + " INTEGER, " + COLUMN_START_DATE + " INTEGER, " + COLUMN_END_DATE + " INTEGER, " + COLUMN_NOTIFY_DATE + " INTEGER, " + COLUMN_COST + " REAL)";
         sqLiteDatabase.execSQL(query);
     }
 
@@ -51,6 +53,7 @@ public class SubscriptionManagerDAO extends SQLiteOpenHelper {
         }
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        contentValues.put(ID, subscription.getId());
         contentValues.put(COLUMN_SUBSCRIPTION, subscription.getSubscription());
         contentValues.put(COLUMN_START_DATE, subscription.getStartDate().getTime());
         contentValues.put(COLUMN_END_DATE, subscription.getEndDate().getTime());
@@ -77,7 +80,7 @@ public class SubscriptionManagerDAO extends SQLiteOpenHelper {
         boolean result = sqLiteDatabase.delete(CUSTOMER_TABLE, COLUMN_SUBSCRIPTION + "=\"" + subscription.getSubscription()+"\";", null) > 0;
         sqLiteDatabase.close();
         if(! result){
-            errorList.add("Unable to delete the Subscription");
+            errorList.add("Unable to delete the Subscription "+ subscription.getSubscription());
         }
         return errorList;
     }
@@ -96,11 +99,20 @@ public class SubscriptionManagerDAO extends SQLiteOpenHelper {
                 Date endDate = new Date(cursor.getLong(3));
                 Date notifyDate = new Date(cursor.getLong(4));
                 double cost = cursor.getDouble(5);
-                allSubscriptions.add(new Subscription(subscription, startDate, endDate, notifyDate, cost));
+                allSubscriptions.add(new Subscription(id, subscription, startDate, endDate, notifyDate, cost));
             } while (cursor.moveToNext());
         }
         cursor.close();
         sqLiteDatabase.close();
         return allSubscriptions;
+    }
+
+    public long getAvailableId() {
+        ArrayList<Subscription> allSubscriptions = getAllSubscriptions();
+        if(allSubscriptions.size() == 0){
+            return 1;
+        }
+        long index = allSubscriptions.get(allSubscriptions.size() -1).getId();
+        return (index + 1);
     }
 }

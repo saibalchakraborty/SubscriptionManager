@@ -6,14 +6,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.subscriptionmanager.dao.SubscriptionManagerDAO;
 import com.subscriptionmanager.model.Subscription;
 import com.subscriptionmanager.utility.RecyclerAdapter;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private Button sendButton;
+    private FloatingActionButton sendButton;
     private RecyclerView recyclerView;
     private Intent subscriptionIntent;
     private RecyclerAdapter recyclerAdapter;
